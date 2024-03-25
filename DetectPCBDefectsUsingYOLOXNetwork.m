@@ -1,7 +1,7 @@
 %% Download pretrained YOLOX detector
-%trainedPCBDefectDetectorNet_url = "https://ssd.mathworks.com/supportfiles/"+ ...
- %   "vision/data/trainedPCBDefectDetectorYOLOX.zip";
-%downloadTrainedNetwork(trainedPCBDefectDetectorNet_url,pwd);
+trainedPCBDefectDetectorNet_url = "https://ssd.mathworks.com/supportfiles/"+ ...
+    "vision/data/trainedPCBDefectDetectorYOLOX.zip";
+downloadTrainedNetwork(trainedPCBDefectDetectorNet_url,pwd);
 load("trainedPCBDefectDetectorYOLOX.mat");
 
 %% Example detection and classification on one image
@@ -46,13 +46,14 @@ rng("default");
 % allocate a relatively large percentage (70%) of the data for training. 
 % Allocate 15% for validation and the rest for testing.
 numImages = ds.numpartitions;
-numTrain = floor(0.7*numImages);
-numVal = floor(0.15*numImages);
+%numTrain = floor(0.7*numImages);
+%numVal = floor(0.15*numImages);
 
 shuffledIndices = randperm(numImages);
-dsTrain = subset(ds,shuffledIndices(1:numTrain));
-dsVal = subset(ds,shuffledIndices(numTrain+1:numTrain+numVal));
-dsTest = subset(ds,shuffledIndices(numTrain+numVal+1:end));
+%dsTrain = subset(ds,shuffledIndices(1:numTrain));
+%dsVal = subset(ds,shuffledIndices(numTrain+1:numTrain+numVal));
+%dsTest = subset(ds,shuffledIndices(numTrain+numVal+1:end));
+dsTest = subset(ds,shuffledIndices(1:end));
 
 %% Evaluate Detector
 % Evaluate the trained object detector by measuring the average precision. 
