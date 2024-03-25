@@ -1,19 +1,19 @@
 %% Download pretrained YOLOX detector
-trainedPCBDefectDetectorNet_url = "https://ssd.mathworks.com/supportfiles/"+ ...
-    "vision/data/trainedPCBDefectDetectorYOLOX.zip";
-downloadTrainedNetwork(trainedPCBDefectDetectorNet_url,pwd);
+%trainedPCBDefectDetectorNet_url = "https://ssd.mathworks.com/supportfiles/"+ ...
+ %   "vision/data/trainedPCBDefectDetectorYOLOX.zip";
+%downloadTrainedNetwork(trainedPCBDefectDetectorNet_url,pwd);
 load("trainedPCBDefectDetectorYOLOX.mat");
 
 %% Example detection and classification on one image
-sampleImage = imread(fullfile("pcb_defect_detection_v2i_voc", "images", ...
-    "01_missing_hole_01_jpg.rf.03d45aa38c40a08fbc3a01bfb1dfa434.jpg"));
+%sampleImage = imread(fullfile("pcb_defect_detection_v2i_voc", "images", ...
+%    "01_missing_hole_01_jpg.rf.03d45aa38c40a08fbc3a01bfb1dfa434.jpg"));
 %sampleImage = cat(3, sampleImage, sampleImage, sampleImage);
-imshow(sampleImage);
-[bboxes,scores,labels] = detect(detector,sampleImage);
-title("Predicted Defects");
-showShape("rectangle",bboxes,Label=labels);
-ax = gcf;
-exportgraphics(ax, "YOLOX predictions.jpg");
+%imshow(sampleImage);
+%[bboxes,scores,labels] = detect(detector,sampleImage);
+%title("Predicted Defects");
+%showShape("rectangle",bboxes,Label=labels);
+%ax = gcf;
+%exportgraphics(ax, "YOLOX predictions.jpg");
 
 %% Prepare data for (hypothetical) training
 % Create an image datastore that reads and manages the image data.
@@ -37,7 +37,7 @@ ds = combine(imds,blds);
 %% Analyze Object Class Distribution
 % Measure the distribution of class labels in the data set by using the countEachLabel function
 countEachLabelTable = countEachLabel(blds);
-writetable(countEachLabelTable, "countEachLabelTable.csv");
+writetable(countEachLabelTable, "countEachLabelTable(Roboflow).csv");
 
 %% Partition Data
 rng("default");
@@ -73,18 +73,22 @@ averagePrecision = cell2mat(metrics.ClassMetrics.AP);
 % Record the average precision score for each class.
 classNames = replace(classNames,"_"," ");
 averagePrecisionTable = table(classNames,averagePrecision);
-writetable(averagePrecisionTable, "AveragePrecisionTable.csv");
+writetable(averagePrecisionTable, "AveragePrecisionTable(Roboflow).csv");
 
 % A precision-recall (PR) curve highlights how precise a detector is at varying levels of recall. 
 % The ideal precision is 1 at all recall levels. Plot the PR curve for the test data.
-class = 1;
-plot(recall{class},precision{class});
-xlabel("Recall");
-ylabel("Precision");
-title(sprintf("Average Precision for '" + classNames(class) + "' Defect: " + "%.2f",averagePrecision(class)));
-grid on;
-ax = gca;
-exportgraphics(ax, "Average Precision for " + classNames(class) + ".jpg");
+for class = 1:6
+    plot(recall{class}, precision{class});
+    xlabel("Recall")
+    ylabel("Precision")
+    title(sprintf("Average Precision for '" + classNames(class) + "' Defect: " + "%.2f", averagePrecision(class)))
+    grid on
+    ax = gca;
+    saveas(ax, "PR Curve for " + classNames(class) + "(Roboflow).m");
+    exportgraphics(ax, "PR Curve for " + classNames(class) + "(Roboflow).jpg");
+    % Add pause if you want to see each plot separately
+    % pause(2); 
+end
 
 %% Evaluate Object Size-based Detection Metrics
 % Investigate the impact of object size on detector performance with the metricsByArea function, 
@@ -100,11 +104,12 @@ boxes = objectLabels(:,1);
 boxes = vertcat(boxes{:});
 boxArea = prod(boxes(:,3:4),2);
 histogram(boxArea);
-xlabel("Box Area");
-ylabel("Count");
-title("Bounding Box Area Distribution");
+xlabel("Box Area")
+ylabel("Count")
+title("Bounding Box Area Distribution")
 ax = gca;
-exportgraphics(ax, "Bounding Box Area Distribution.jpg");
+saveas(ax, "Bounding Box Area Distribution(Roboflow).m");
+exportgraphics(ax, "Bounding Box Area Distribution(Roboflow).jpg");
 
 % Define the bounding box area ranges, and then evaluate object detection metrics 
 % for the defined area ranges using metricsByArea. 
@@ -113,4 +118,4 @@ exportgraphics(ax, "Bounding Box Area Distribution.jpg");
 % with a slight performance improvement for medium objects.
 boxPrctileBoundaries = prctile(boxArea,100*[1/3,2/3]);
 metricsByAreaTable = metricsByArea(metrics,[0, boxPrctileBoundaries, inf]);
-writetable(metricsByAreaTable, "metricsByAreaTable.csv");
+writetable(metricsByAreaTable, "metricsByAreaTable(Roboflow).csv");
